@@ -458,6 +458,10 @@ impl AndroidAppInner {
         let na = self.native_activity();
         unsafe { util::try_get_path_from_ptr((*na).obbPath) }
     }
+
+    pub fn window_insets(&self, _type: crate::InsetType) -> Option<ndk_sys::ARect> {
+        None
+    }
 }
 
 #[derive(Debug)]

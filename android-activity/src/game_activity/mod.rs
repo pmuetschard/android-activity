@@ -27,7 +27,7 @@ use crate::input::{Axis, KeyCharacterMap, KeyCharacterMapBinding};
 use crate::jni_utils::{self, CloneJavaVM};
 use crate::util::{abort_on_panic, forward_stdio_to_logcat, log_panic, try_get_path_from_ptr};
 use crate::{
-    AndroidApp, ConfigurationRef, InputStatus, MainEvent, PollEvent, Rect, WindowManagerFlags,
+    AndroidApp, ConfigurationRef, InputStatus, InsetType, MainEvent, PollEvent, Rect, WindowManagerFlags
 };
 
 mod ffi;
@@ -630,6 +630,15 @@ impl AndroidAppInner {
             try_get_path_from_ptr((*(*app_ptr).activity).obbPath)
         }
     }
+
+    pub fn window_insets(&self, type_: InsetType) -> Option<ndk_sys::ARect> {
+        unsafe {
+            let activity = (*self.native_app.as_ptr()).activity;
+            let mut rect = ndk_sys::ARect { top: 0, left: 0, bottom: 0, right: 0 };
+            ffi::GameActivity_getWindowInsets(activity, ffi::GameCommonInsetsType::from(type_), &mut rect);
+            Some(rect)
+        }
+    }
 }
 
 struct MotionEventsLendingIterator {
@@ -959,3 +968,19 @@ pub unsafe extern "C" fn _rust_glue_entry(native_app: *mut ffi::android_app) {
         }
     })
 }
+
+impl From<InsetType> for ffi::GameCommonInsetsType {
+    fn from(value: InsetType) -> Self {
+        match value {
+            InsetType::CaptionBar => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_CAPTION_BAR,
+            InsetType::DisplayCutout => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_DISPLAY_CUTOUT,
+            InsetType::Ime => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_IME,
+            InsetType::MandatorySystemGestures => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_MANDATORY_SYSTEM_GESTURES,
+            InsetType::NavigationBars => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_NAVIGATION_BARS,
+            InsetType::StatusBars => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_STATUS_BARS,
+            InsetType::SystemBars => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_SYSTEM_BARS,
+            InsetType::SystemGestures => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_SYSTEM_GESTURES,
+            InsetType::TappableElement => ffi::GameCommonInsetsType_GAMECOMMON_INSETS_TYPE_TAPABLE_ELEMENT,
+        }
+    }
+} 

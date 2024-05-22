@@ -163,6 +163,9 @@ use error::Result;
 
 pub mod input;
 
+mod insets;
+pub use insets::InsetType;
+
 mod config;
 pub use config::ConfigurationRef;
 
@@ -859,6 +862,10 @@ impl AndroidApp {
     /// Path to the directory containing the application's OBB files (if any).
     pub fn obb_path(&self) -> Option<std::path::PathBuf> {
         self.inner.read().unwrap().obb_path()
+    }
+
+    pub fn window_insets(&self, type_: InsetType) -> Option<ndk_sys::ARect> {
+        self.inner.read().unwrap().window_insets(type_)
     }
 }
 
